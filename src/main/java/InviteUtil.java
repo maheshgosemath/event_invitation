@@ -24,7 +24,7 @@ public class InviteUtil {
         VEvent event = new VEvent();
 
         event.setOrganizer(calendarInviteVO.getOrganizer().getEmail());
-        event.setUid("12345678"); //unique to an event
+        event.setUid("123456789012"); //unique to an event
         event.setDateStart(calendarInviteVO.getStartDate());
 
         Summary summary = event.setSummary(calendarInviteVO.getSummary());
@@ -40,6 +40,10 @@ public class InviteUtil {
                 attendeesEmail.add(attendee.getEmail());
             }
         }
+
+        event.setSequence(0);
+        event.setCreated(new Date());
+        event.setLastModified(new Date());
 
         /*
         Method.request for new events

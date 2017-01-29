@@ -19,39 +19,54 @@ public class MailSender {
 
     /*
     @param inviteMessage contains message for the event
+    @param method REQUEST/CANCEL
     @param emails contains list of emails involved in event
      */
-    public void sendMail(String inviteMessage, List<String> emails) {
+    public void sendMail(String inviteMessage, String method, List<String> emails) {
         try {
+
             Properties prop = new Properties();
             Session session = Session.getDefaultInstance(prop, null);
 
             //headers for calendar invite
             MimeMessage message = new MimeMessage(session);
-            message.addHeaderLine("method=REQUEST");
             message.addHeaderLine("charset=UTF-8");
             message.addHeaderLine("component=VEVENT");
+            message.addHeaderLine("method=" + method);
 
             message.setFrom(new InternetAddress("abc@xyz.com"));
-            message.setSubject("Interview Request");
+            message.setSubject("Interview Request Invitation");
 
             for(String email: emails) {
                 message.addRecipients(Message.RecipientType.TO, email);
             }
 
             BodyPart textBodyPart = new MimeBodyPart();
-            textBodyPart.setContent("Invitation for an event.", "text/plain");
+            textBodyPart.setContent("Invitation for an event.", "text/plain;charset=\"UTF-8\"");
 
             //invite's calendar part
             BodyPart messageBodyPart = new MimeBodyPart();
-            messageBodyPart.addHeader("Content-Class", "urn:content-classes:calendarmessage");
-            messageBodyPart.addHeader("Content-ID", "calendar_message");
-            messageBodyPart.setContent(inviteMessage, "text/calendar");
+            messageBodyPart.setContent(inviteMessage, "text/calendar;charset=\"UTF-8\";method=" + method);
 
             Multipart multipart = new MimeMultipart("alternative");
             multipart.addBodyPart(textBodyPart);
             multipart.addBodyPart(messageBodyPart);
-            message.setContent(multipart);
+
+            Multipart mixedMultipart = new MimeMultipart("mixed");
+            BodyPart mixedBodyPart = new MimeBodyPart();
+            mixedBodyPart.setContent(multipart);
+            mixedMultipart.addBodyPart(mixedBodyPart);
+
+            //attachment metadata for outlook
+            BodyPart emptyBodyPart = new MimeBodyPart();
+            emptyBodyPart.addHeader("Content-Type", "application/ics; name=\"invite.ics\"");
+            emptyBodyPart.addHeader("Content-Disposition", "attachment; filename=\"invite.ics\"");
+            emptyBodyPart.addHeader("Content-Transfer-Encoding", "base64");
+            emptyBodyPart.setContent(inviteMessage, "application/ics; name=\"invite.ics\"");
+
+            mixedMultipart.addBodyPart(emptyBodyPart);
+
+            message.setContent(mixedMultipart);
 
             Transport transport = session.getTransport ("smtp");
             transport.connect("mail.server.address","email-id","password");

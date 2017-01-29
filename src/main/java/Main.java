@@ -24,7 +24,10 @@ public class Main {
         calendarInviteVO.setSummary("Event Invitation");
         calendarInviteVO.setMessage("Event message");
 
-        calendarInviteVO.setStartDate(new Date());
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(2017, 0, 30, 15, 00);
+
+        calendarInviteVO.setStartDate(calendar.getTime());
         calendarInviteVO.setDuration(30);
 
         List<Attendee> attendeeList = new ArrayList<Attendee>();
@@ -51,7 +54,7 @@ public class Main {
         }
 
         MailSender mailSender = new MailSender();
-        mailSender.sendMail(inviteMessage, emails);
+        mailSender.sendMail(inviteMessage, "REQUEST", emails);
 
     }
 }
